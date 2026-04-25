@@ -15,7 +15,7 @@ service:
 
 persistence:
   accessModes: ["ReadWriteOnce"]
-  size: 5Gi         # plenty for .md-based knowledge, easy to resize later
+  size: 5Gi
 
 resources:
   requests:
@@ -25,10 +25,17 @@ resources:
     cpu: "1000m"
     memory: "1Gi"
 
+# Toleration: allows Qdrant to schedule on the GPU-tainted node
+# The pod doesn't USE the GPU — it just tolerates the taint to land on the same node
+tolerations:
+  - key: "nvidia.com/gpu"
+    operator: "Equal"
+    value: "present"
+    effect: "NoSchedule"
+
 # No auth for now (internal cluster only via ClusterIP)
-# Enable if you expose Qdrant outside the cluster later
 apiKey: ""
 
 config:
   cluster:
-    enabled: false  # single node, no clustering needed
+    enabled: false
