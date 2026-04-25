@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RetrievedChunk",
+  "type": "object",
+  "required": ["source", "text"],
+  "properties": {
+    "source": { "type": "string" },
+    "score": { "type": "number", "minimum": 0, "maximum": 1 },
+    "text": { "type": "string" },
+    "metadata": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}
