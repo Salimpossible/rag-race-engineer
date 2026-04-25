@@ -1,0 +1,34 @@
+# Qdrant Helm values
+# Chart: https://qdrant.github.io/helm-charts
+# Install: helm install qdrant qdrant/qdrant -n gpu-workloads -f infra/qdrant/values.yaml
+
+replicaCount: 1
+
+image:
+  repository: qdrant/qdrant
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 6333        # REST API  → used by qdrant-client in Python
+  grpcPort: 6334    # gRPC API  → optional, kept for future use
+
+persistence:
+  accessModes: ["ReadWriteOnce"]
+  size: 5Gi         # plenty for .md-based knowledge, easy to resize later
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "512Mi"
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+
+# No auth for now (internal cluster only via ClusterIP)
+# Enable if you expose Qdrant outside the cluster later
+apiKey: ""
+
+config:
+  cluster:
+    enabled: false  # single node, no clustering needed
