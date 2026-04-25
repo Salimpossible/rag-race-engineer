@@ -16,8 +16,12 @@ CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "400"))   # tokens per chunk
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "80"))  # overlap in tokens
 
 # RAG — Qdrant
-QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant.gpu-workloads.svc.cluster.local:6333")
+QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant:6333")
 QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "race_engineer")
 
 # RAG — Knowledge base location
 KNOWLEDGE_DIR = BASE_DIR / "knowledge" / "curated"
+
+# LLM — Ollama
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
