@@ -1,23 +1,16 @@
-"""retriever.py — query-time retrieval: embed question → search Qdrant → return top-k chunks.
-
-Flow:
-  1. Prepend "query: " prefix (required by e5 models for queries — different from "passage: ")
-  2. Embed the question with the same model used during ingestion
-  3. Search Qdrant for the top-k nearest vectors (cosine similarity)
-  4. Return the chunk texts + metadata for injection into the LLM prompt
-"""
+"""retriever.py — query-time retrieval: embed question → search Qdrant → return top-k chunks."""
 
 import logging
 from typing import List, Dict
 
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient
+from qdrant_client.models import NamedVector, Query
 
 from src.config import EMBEDDING_MODEL, QDRANT_URL, QDRANT_COLLECTION
 
 logger = logging.getLogger(__name__)
 
-# Module-level singletons — loaded once, reused across requests
 _model: SentenceTransformer | None = None
 _client: QdrantClient | None = None
 
@@ -38,28 +31,19 @@ def _get_client() -> QdrantClient:
 
 
 def retrieve(query: str, top_k: int = 5) -> List[Dict]:
-    """
-    Find the top-k most relevant chunks for a given query.
-
-    Args:
-        query:  the driver's question or issue description
-        top_k:  number of chunks to retrieve (default 5)
-
-    Returns:
-        list of dicts with keys: source, chunk_index, text, score
-    """
-    # e5 models require "query: " prefix for questions (asymmetric retrieval)
+    """Find the top-k most relevant chunks for a given query."""
     query_text = f"query: {query}"
     model = _get_model()
     query_vector = model.encode(query_text, normalize_embeddings=True).tolist()
 
     client = _get_client()
-    results = client.search(
+    # query_points() replaces the deprecated search() in qdrant-client >= 1.7
+    results = client.query_points(
         collection_name=QDRANT_COLLECTION,
-        query_vector=query_vector,
+        query=query_vector,
         limit=top_k,
         with_payload=True,
-    )
+    ).points
 
     return [
         {
