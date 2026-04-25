@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rag-race-engineer
+  namespace: gpu-workloads
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rag-race-engineer
+  template:
+    metadata:
+      labels:
+        app: rag-race-engineer
+    spec:
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Equal"
+          value: "present"
+          effect: "NoSchedule"
+
+      containers:
+        - name: rag-race-engineer
+          image: ghcr.io/salimpossible/rag-race-engineer:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8000
+          env:
+            - name: QDRANT_URL
+              value: "http://qdrant:6333"
+            - name: QDRANT_COLLECTION
+              value: "race_engineer"
+            - name: OLLAMA_URL
+              value: "http://ollama:11434"
+            - name: OLLAMA_MODEL
+              value: "qwen2.5:7b"
+            - name: EMBEDDING_MODEL
+              value: "intfloat/e5-large-v2"
+            - name: LOG_LEVEL
+              value: "INFO"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "1Gi"   # sentence-transformers loads model into memory
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
