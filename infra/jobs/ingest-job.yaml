@@ -1,0 +1,72 @@
+# Ingestion Job
+# Clones the repo and runs the ingest pipeline inside the cluster.
+#
+# Usage:
+#   kubectl apply -f infra/jobs/ingest-job.yaml
+#   kubectl logs -f job/rag-ingest -n gpu-workloads
+#   kubectl delete job rag-ingest -n gpu-workloads   # cleanup after run
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: rag-ingest
+  namespace: gpu-workloads
+spec:
+  ttlSecondsAfterFinished: 300  # auto-cleanup 5min after completion
+  template:
+    spec:
+      restartPolicy: Never
+
+      tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Equal"
+          value: "present"
+          effect: "NoSchedule"
+
+      volumes:
+        - name: workspace
+          emptyDir: {}  # shared volume between init and main container
+
+      initContainers:
+        - name: git-clone
+          image: alpine/git:latest
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+          command:
+            - git
+            - clone
+            - https://github.com/Salimpossible/rag-race-engineer.git
+            - /workspace/app
+
+      containers:
+        - name: ingest
+          image: python:3.11-slim
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+          workingDir: /workspace/app
+          env:
+            - name: QDRANT_URL
+              value: "http://qdrant:6333"         # same namespace → short DNS name
+            - name: QDRANT_COLLECTION
+              value: "race_engineer"
+            - name: EMBEDDING_MODEL
+              value: "intfloat/e5-large-v2"
+            - name: PYTHONPATH
+              value: "/workspace/app"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              pip install --quiet \
+                sentence-transformers \
+                qdrant-client \
+                tiktoken && \
+              python -m src.rag.ingest
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "2Gi"   # e5-large-v2 model is ~1.3GB
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
