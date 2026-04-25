@@ -1,7 +1,7 @@
 """openai_routes.py — OpenAI-compatible endpoints.
 
-Open WebUI probes both /models and /v1/models depending on version,
-so we serve both.
+Open WebUI v0.8 strips the /v1 prefix when proxying requests,
+so every route must be served both with and without it.
 """
 
 import time
@@ -53,20 +53,7 @@ def _models_response():
     }
 
 
-# Both paths — Open WebUI v0.8+ calls /models, older clients call /v1/models
-@router.get("/v1/models")
-@router.get("/models")
-def list_models(
-    authorization: Optional[str] = Header(None),
-):
-    return _models_response()
-
-
-@router.post("/v1/chat/completions")
-def chat_completions(
-    request: ChatCompletionRequest,
-    authorization: Optional[str] = Header(None),
-):
+def _completions_response(request: ChatCompletionRequest) -> dict:
     user_input = _get_user_input(request.messages)
     prompt = build_prompt(task="default", user_input=user_input)
 
@@ -106,3 +93,20 @@ def chat_completions(
         ],
         "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
     }
+
+
+# /v1/models and /models
+@router.get("/v1/models")
+@router.get("/models")
+def list_models(authorization: Optional[str] = Header(None)):
+    return _models_response()
+
+
+# /v1/chat/completions and /chat/completions
+@router.post("/v1/chat/completions")
+@router.post("/chat/completions")
+def chat_completions(
+    request: ChatCompletionRequest,
+    authorization: Optional[str] = Header(None),
+):
+    return _completions_response(request)
