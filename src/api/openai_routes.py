@@ -1,22 +1,11 @@
-"""openai_routes.py — OpenAI-compatible /v1/chat/completions endpoint.
-
-This makes the RAG stack look like a standard OpenAI model to any client
-(Open WebUI, curl, Python openai SDK, etc.).
-
-Request format (OpenAI standard):
-  POST /v1/chat/completions
-  { "model": "rag-race-engineer", "messages": [{"role": "user", "content": "..."}] }
-
-Response format (OpenAI standard):
-  { "choices": [{"message": {"role": "assistant", "content": "..."}}], ... }
-"""
+"""openai_routes.py — OpenAI-compatible /v1/chat/completions endpoint."""
 
 import time
 import uuid
 import httpx
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -27,10 +16,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# --- OpenAI-compatible request/response models ---
-
 class ChatMessage(BaseModel):
-    role: str      # "system", "user", or "assistant"
+    role: str
     content: str
 
 
@@ -41,34 +28,21 @@ class ChatCompletionRequest(BaseModel):
     stream: Optional[bool] = False
 
 
-class ChatCompletionResponse(BaseModel):
-    id: str
-    object: str = "chat.completion"
-    created: int
-    model: str
-    choices: list
-
-
-# --- Helper: extract last user message ---
-
 def _get_user_input(messages: List[ChatMessage]) -> str:
-    """Return the last user message content."""
     for msg in reversed(messages):
         if msg.role == "user":
             return msg.content
     return ""
 
 
-# --- Endpoint ---
-
 @router.post("/v1/chat/completions")
-def chat_completions(request: ChatCompletionRequest):
+def chat_completions(
+    request: ChatCompletionRequest,
+    authorization: Optional[str] = Header(None),  # accept but ignore bearer token
+):
     user_input = _get_user_input(request.messages)
-
-    # RAG: retrieve context + build grounded prompt
     prompt = build_prompt(task="default", user_input=user_input)
 
-    # Call Ollama with the enriched prompt
     payload = {
         "model": OLLAMA_MODEL,
         "messages": [
@@ -91,7 +65,6 @@ def chat_completions(request: ChatCompletionRequest):
         logger.error(f"Ollama call failed: {e}")
         answer = "Sorry, I could not generate a response at this time."
 
-    # Return OpenAI-compatible response
     return {
         "id": f"chatcmpl-{uuid.uuid4().hex}",
         "object": "chat.completion",
@@ -108,10 +81,10 @@ def chat_completions(request: ChatCompletionRequest):
     }
 
 
-# --- Model list endpoint (required by Open WebUI to discover available models) ---
-
 @router.get("/v1/models")
-def list_models():
+def list_models(
+    authorization: Optional[str] = Header(None),  # accept but ignore bearer token
+):
     return {
         "object": "list",
         "data": [
