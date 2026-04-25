@@ -1,3 +1,11 @@
+---
+title: "Dampers and Anti-Roll Bars"
+description: "Guidance on damper and anti-roll bar roles, symptoms, and setup strategy."
+tags: [suspension, dampers, arb, setup]
+created: "2026-04-25"
+source: "moved from root"
+---
+
 # Dampers and Anti-Roll Bars
 
 ## Purpose
@@ -91,3 +99,4 @@ The best solution is usually a compromise between mechanical grip and aero platf
 
 ## Practical Note
 Damper tuning is easy to overcomplicate. For a v0 race engineer assistant, the most important ideas are: dampers shape transient behavior, anti-roll bars shape roll balance, and both should be judged in the context of tire behavior and corner phase.
+

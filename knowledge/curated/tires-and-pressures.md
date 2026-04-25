@@ -1,3 +1,11 @@
+---
+title: "Tires and Pressures"
+description: "Principles of tire behavior, pressure tuning, and testing guidance."
+tags: [tires, pressures, setup]
+created: "2026-04-25"
+source: "moved from root"
+---
+
 # Tires and Pressures
 
 ## Purpose

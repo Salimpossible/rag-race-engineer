@@ -1,3 +1,11 @@
+---
+title: "Vehicle Dynamics Basics"
+description: "Core vehicle dynamics concepts useful for setup work and interpreting driver feedback."
+tags: [dynamics, fundamentals, setup]
+created: "2026-04-25"
+source: "moved from root"
+---
+
 # Vehicle Dynamics Basics
 
 ## Purpose
@@ -61,8 +69,8 @@ Static weight distribution matters, but dynamic behavior matters more. A car tha
 ## Basic Equations
 A few simple relations help frame setup thinking:
 
-- Force relation: \(F = ma\)
-- Lateral acceleration in a corner: \(a_y = v^2 / R\)
+- Force relation: $F = ma$
+- Lateral acceleration in a corner: $a_y = v^2 / R$
 
 These equations show why higher speed and tighter radius demand more tire force. They do not replace full modeling, but they explain why the same setup issue may appear only in specific corner types.
 

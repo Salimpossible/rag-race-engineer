@@ -1,3 +1,11 @@
+---
+title: "Data and Testing Basics"
+description: "A concise testing workflow and best practices for controlled setup experiments."
+tags: [testing, data, workflow]
+created: "2026-04-25"
+source: "moved from root"
+---
+
 # Data and Testing Basics
 
 ## Purpose

@@ -1,3 +1,11 @@
+---
+title: "Aero Balance"
+description: "Notes on aerodynamic balance and its effects on handling and setup decisions."
+tags: [aero, balance, setup]
+created: "2026-04-25"
+source: "moved from root"
+---
+
 # Aero Balance
 
 ## Purpose
