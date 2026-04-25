@@ -10,6 +10,7 @@ on:
       - 'knowledge/**'
       - 'Dockerfile'
       - 'pyproject.toml'
+  workflow_dispatch:  # manual trigger from GitHub UI
 
 jobs:
   build-and-push:
