@@ -15,6 +15,10 @@ uvicorn = "^0.22"
 pydantic = "^1.10"
 pyyaml = "^6.0"
 jsonschema = "^4.0"
+# RAG dependencies
+sentence-transformers = "^2.7"
+qdrant-client = "^1.9"
+tiktoken = "^0.7"
 
 [project.optional-dependencies]
 dev = [
