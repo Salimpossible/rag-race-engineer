@@ -1,4 +1,8 @@
-"""openai_routes.py — OpenAI-compatible /v1/chat/completions endpoint."""
+"""openai_routes.py — OpenAI-compatible endpoints.
+
+Open WebUI probes both /models and /v1/models depending on version,
+so we serve both.
+"""
 
 import time
 import uuid
@@ -35,10 +39,33 @@ def _get_user_input(messages: List[ChatMessage]) -> str:
     return ""
 
 
+def _models_response():
+    return {
+        "object": "list",
+        "data": [
+            {
+                "id": "rag-race-engineer",
+                "object": "model",
+                "created": 1700000000,
+                "owned_by": "local",
+            }
+        ],
+    }
+
+
+# Both paths — Open WebUI v0.8+ calls /models, older clients call /v1/models
+@router.get("/v1/models")
+@router.get("/models")
+def list_models(
+    authorization: Optional[str] = Header(None),
+):
+    return _models_response()
+
+
 @router.post("/v1/chat/completions")
 def chat_completions(
     request: ChatCompletionRequest,
-    authorization: Optional[str] = Header(None),  # accept but ignore bearer token
+    authorization: Optional[str] = Header(None),
 ):
     user_input = _get_user_input(request.messages)
     prompt = build_prompt(task="default", user_input=user_input)
@@ -78,21 +105,4 @@ def chat_completions(
             }
         ],
         "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
-    }
-
-
-@router.get("/v1/models")
-def list_models(
-    authorization: Optional[str] = Header(None),  # accept but ignore bearer token
-):
-    return {
-        "object": "list",
-        "data": [
-            {
-                "id": "rag-race-engineer",
-                "object": "model",
-                "created": 1700000000,
-                "owned_by": "local",
-            }
-        ],
     }
